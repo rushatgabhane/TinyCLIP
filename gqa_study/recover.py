@@ -13,10 +13,16 @@ def attn_params(model):
             for p in blk.attn.parameters() if p.requires_grad]
 
 
-def uptrain(student, teacher, image_loader, texts, device="cpu", steps=300, lr=1e-4):
+def trainable_params(model, scope):
+    if scope == "attn":
+        return attn_params(model)
+    return [p for p in model.parameters() if p.requires_grad]
+
+
+def uptrain(student, teacher, image_loader, texts, device="cpu", steps=1000, lr=1e-4, scope="all"):
     student = student.to(device).train()
     texts = texts.to(device)
-    opt = torch.optim.AdamW(attn_params(student), lr=lr)
+    opt = torch.optim.AdamW(trainable_params(student, scope), lr=lr)
     it = iter(image_loader)
     for step in range(steps):
         try:
