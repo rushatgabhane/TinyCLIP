@@ -74,7 +74,7 @@
 \vspace{-1cm}
 \noindent\rule{\linewidth}{1pt}
 
-We replace multi-head attention (MHA) in a pretrained \textbf{TinyCLIP-8M} with grouped-query (GQA) and multi-query (MQA) attention in \emph{both} the image and text encoders, by mean-pooling each group's key/value heads, the conversion recipe of Ainslie et al. \cite{gqa2023}. Raw conversion collapses zero-shot accuracy (56.8\% to about 5\%), but a short feature-distillation \textbf{uptrain} recovers most of it: GQA-2 reaches \textbf{93\% of MHA accuracy on CIFAR-100 with half the K/V parameters}. Crucially, on a bidirectional \emph{encoder} the saving is parameter count only; throughput and peak memory are unchanged, because there is no autoregressive KV-cache to shrink. A useful negative result: GQA's headline efficiency benefit does not transfer to CLIP-style encoders.
+We replace multi-head attention (MHA) in a pretrained \textbf{TinyCLIP-8M} with grouped-query (GQA) and multi-query (MQA) attention in \emph{both} the image and text encoders, by mean-pooling each group's key/value heads, the conversion recipe of Ainslie et al. \cite{gqa2023}. Conversion alone reduces average zero-shot accuracy from 56.8\% to about 5\%, but a short feature-distillation uptrain recovers most of it: GQA-2 reaches 93\% of MHA accuracy on CIFAR-100 using half the K/V parameters. On these bidirectional encoders the only saving is parameter count; throughput and peak memory are unchanged, since there is no autoregressive KV-cache to reduce. The efficiency benefit of GQA and MQA therefore does not transfer to CLIP-style encoders.
 
 %----------------------------------------------------------------------------------------
 %	INTRODUCTION
@@ -128,7 +128,7 @@ Multi-query \cite{mqa2019} and grouped-query \cite{gqa2023} attention reduce the
 \vspace{-1cm}
 \noindent\rule{\linewidth}{3pt}
 
-\headerbox{Zero-shot accuracy: conversion collapses, uptraining recovers}
+\headerbox{Zero-shot accuracy: conversion and uptraining}
 \vspace{0.4cm}
 
 \begin{center}
@@ -150,7 +150,7 @@ MQA & 1 & 5.0 & \textbf{28.7} & 31.7 & 25.6 \\
 \vspace{0.15cm}
 \end{center}
 
-\headerbox{Efficiency: K/V parameters shrink, runtime does not}
+\headerbox{Efficiency: parameters, throughput, and memory}
 \vspace{0.4cm}
 
 \begin{center}
@@ -185,8 +185,8 @@ MQA & 0.43M (\textbf{25\%}) & 22.2M & 6250 & 335 & 10.17 \\
 \vspace{0.15cm}
 \end{center}
 
-\headerbox{Why no runtime win? Encoder vs.\ decoder}
-GQA/MQA save memory by shrinking the \textbf{KV-cache during autoregressive decoding}. A CLIP encoder is \textbf{bidirectional and runs in a single pass, it has no KV-cache}. The GQA paper itself applies GQA only to the decoder, never the encoder \cite{gqa2023}. On CLIP, the only real saving is the K/V projection weights (a small slice of the model), and broadcasting K/V back to full width leaves attention FLOPs unchanged.
+\headerbox{Encoder vs.\ decoder: no KV-cache}
+GQA and MQA reduce memory by shrinking the KV-cache during autoregressive decoding. A CLIP encoder is bidirectional and runs in a single pass, so it has no KV-cache. Ainslie et al.\ \cite{gqa2023} apply GQA only to the decoder, not the encoder. On CLIP the only saving is the K/V projection weights (a small fraction of the model), and broadcasting K/V back to full width leaves the attention computation unchanged.
 
 %----------------------------------------------------------------------------------------
 %	CONCLUSIONS
@@ -198,11 +198,11 @@ GQA/MQA save memory by shrinking the \textbf{KV-cache during autoregressive deco
 \noindent\rule{\linewidth}{1pt}
 
 \begin{itemize}\setlength\itemsep{0pt}\setlength\topsep{0pt}\setlength\parsep{0pt}\setlength\partopsep{0pt}
-    \item \textbf{Conversion alone collapses} zero-shot accuracy on a small CLIP; \textbf{a short uptrain recovers most of it}.
-    \item \textbf{GQA-2 is the sweet spot}: about 77\% of MHA overall and \textbf{93\% on CIFAR-100 at half the K/V parameters}; MQA trades far more accuracy for 4x compression.
-    \item On a bidirectional encoder the benefit is \textbf{parameter compression only} no throughput or memory gain, because there is no KV-cache.
-    \item \textbf{Takeaway / negative result:} GQA/MQA's efficiency motivation does not transfer to CLIP encoders; it is a model-size lever, not a speed lever.
-    \item \textbf{Future work:} larger TinyCLIP (more heads to finer GQA sweep), longer uptraining, and vision-only vs.\ both-encoder ablation.
+    \item Conversion alone reduces zero-shot accuracy to near-random on a small CLIP; a short uptrain recovers most of it.
+    \item GQA-2 gives the best accuracy/compression trade-off: about 77\% of MHA accuracy overall and 93\% on CIFAR-100 at half the K/V parameters. MQA loses substantially more accuracy for 4x compression.
+    \item On a bidirectional encoder the only benefit is parameter compression; there is no throughput or memory gain, because there is no KV-cache.
+    \item GQA and MQA reduce the number of K/V parameters on CLIP encoders but do not improve inference speed or memory.
+    \item Future work: larger TinyCLIP (more heads allow a finer GQA sweep), longer uptraining, and a vision-only vs.\ both-encoder ablation.
 \end{itemize}
 \color{Black}
 
