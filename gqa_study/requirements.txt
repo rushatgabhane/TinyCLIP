@@ -4,3 +4,4 @@ torchvision
 matplotlib
 pandas
 ipykernel
+ipywidgets
