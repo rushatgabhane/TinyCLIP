@@ -14,12 +14,12 @@ TEMPLATES = {
 }
 
 
-def build_dataset(name, root, preprocess):
+def build_dataset(name, root, preprocess, train=False):
     import torchvision.datasets as tvd
     if name == "cifar10":
-        return tvd.CIFAR10(root, train=False, download=True, transform=preprocess)
+        return tvd.CIFAR10(root, train=train, download=True, transform=preprocess)
     if name == "cifar100":
-        return tvd.CIFAR100(root, train=False, download=True, transform=preprocess)
+        return tvd.CIFAR100(root, train=train, download=True, transform=preprocess)
     raise ValueError(name)
 
 
