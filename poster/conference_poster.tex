@@ -108,6 +108,12 @@ Multi-query~\cite{mqa2019} and grouped-query~\cite{gqa2023} attention reduce the
 \vspace{0.4cm}
 \noindent\textbf{Conversion.} For each block, partition the 4 K/V heads into $G$ groups and \textbf{mean-pool} within each group; queries and the output projection are copied unchanged. $G=4$ is MHA (lossless), $G=2$ is GQA-2, $G=1$ is MQA. Applied to \emph{both} encoders.
 
+\begin{center}\vspace{0.15cm}
+\includegraphics[width=\linewidth]{attention_diagram_tinyclip-8m.png}
+\captionof{figure}{\small\color{NavyBlue} All 4 query heads are kept; key/value heads are pooled into $G$ groups: MHA (4), GQA-2 (2), MQA (1).}
+\vspace{0.15cm}
+\end{center}
+
 \vspace{0.4cm}
 \noindent\textbf{Uptrain.} Brief fine-tuning of the converted model by distilling image \emph{and} text features from the original MHA model (cosine loss, 1000 steps, CIFAR-10$+$CIFAR-100 images and class prompts).
 
